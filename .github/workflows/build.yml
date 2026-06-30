@@ -10,15 +10,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup NDK
-        uses: nttld/setup-ndk@v1
+      - uses: actions/checkout@v5
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          ndk-version: r25c
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Setup NDK
+        run: |
+          echo "y" | sdkmanager "ndk;25.2.9519653"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
       - name: Build module
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-          echo "ndk.dir=$ANDROID_NDK_ROOT" >> local.properties
+          echo "ndk.dir=$ANDROID_NDK_HOME" >> local.properties
           chmod +x gradlew
           ./gradlew :module:assembleRelease
         env:
@@ -28,3 +35,4 @@ jobs:
         with:
           name: zygisk-il2cppdumper
           path: out/*.zip
+          
